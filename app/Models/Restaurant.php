@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\OperatingStatus;
 use App\Enums\RestaurantStatus;
 use App\Support\ArabicSlug;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -135,5 +136,73 @@ class Restaurant extends Model
     public function scopeInArea(Builder $query, int $areaId): Builder
     {
         return $query->where('area_id', $areaId);
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where('name', 'like', "%{$term}%");
+    }
+
+    /**
+     * Is the restaurant open right now in Gaza time?
+     *
+     * Handles closed days and shifts that end after midnight
+     * (a closing time earlier than the opening time).
+     */
+    public function isOpenNow(?Carbon $now = null): bool
+    {
+        $now ??= now();
+
+        // Carbon: Sunday=0 … Saturday=6. Ours: Saturday=0 … Friday=6.
+        $dayNumber = ($now->dayOfWeek + 1) % 7;
+
+        $today = $this->openingHours->first(
+            fn (OpeningHour $hour) => $hour->day_of_week->value === $dayNumber
+        );
+
+        if (! $today || $today->is_closed || ! $today->opens_at || ! $today->closes_at) {
+            return false;
+        }
+
+        $time = $now->format('H:i:s');
+        $opens = substr((string) $today->opens_at, 0, 8);
+        $closes = substr((string) $today->closes_at, 0, 8);
+
+        if ($closes <= $opens) {
+            return $time >= $opens || $time < $closes;
+        }
+
+        return $time >= $opens && $time < $closes;
+    }
+
+    /**
+     * When the operating status was last changed (falls back to updated_at).
+     */
+    public function statusUpdatedAt(): Carbon
+    {
+        return $this->operating_status_updated_at ?? $this->updated_at;
+    }
+
+    public function coverUrl(): string
+    {
+        return $this->coverImage?->url ?? asset('images/placeholder-restaurant.svg');
+    }
+
+    /**
+     * Click-to-chat link. Keeps digits only so stored formats like
+     * "+970-59-0000010" or "00970…" both work.
+     */
+    public function whatsappUrl(): ?string
+    {
+        $digits = (string) preg_replace('/\D/', '', $this->whatsapp ?? '');
+        $digits = (string) preg_replace('/^00/', '', $digits);
+
+        return $digits === '' ? null : 'https://wa.me/'.$digits;
     }
 }
