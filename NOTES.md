@@ -13,9 +13,24 @@
 - Problems: PHP not in PATH (fixed via environment variables), PowerShell blocked npm scripts (fixed with Set-ExecutionPolicy)
 
 ### Phase 1 — Data layer
-- Date: 2026-10-05 (branch `phase-1-data-layer`)
-- What I built: 6 migrations (categories, areas, users.role, restaurants, restaurant_images, opening_hours); 4 PHP enums with Arabic labels; 5 models with relationships, scopes and auto Arabic slugs; 5 factories; 4 seeders (12 fictional Gaza restaurants); 20 new tests.
-- Concepts I reviewed (migrations, relationships, factories, seeders):
-- Decisions and why: string columns + PHP enums instead of DB enum (works on MySQL and SQLite); slug generated only on create with numeric suffixes so links never break; DatabaseSeeder without WithoutModelEvents so the slug event fires.
+- Date: 2026-10-05 | Branch: `phase-1-data-layer`
 
-(Add one section per phase.)
+**What I did**
+I defined the requirements and data model for Azouma and built it with an AI coding agent, then reviewed the code, ran the migrations and seeders, and verified the full test suite.
+
+**What is in it**
+- 6 migrations (categories, areas, user roles, restaurants, restaurant images, opening hours)
+- 4 enums, 5 models with relationships and scopes, an Arabic slug helper
+- Factories and seeders with fictional demo data
+- 20 new tests (45 passing in total)
+
+**Key decisions I understand and agree with**
+- Status fields are strings cast to enums, so the same migrations work on MySQL and SQLite.
+- Slugs keep Arabic letters and never change after creation, so shared links don't break.
+- Images and opening hours use cascade delete, since they only make sense with their restaurant.
+- The week starts on Saturday (0), as it does in Gaza.
+
+**What I learned**
+Migrations and foreign keys, enums and casts, relationships and scopes, route model binding by slug, factories vs seeders, and testing with in-memory SQLite.
+
+
