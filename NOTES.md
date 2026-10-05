@@ -13,9 +13,9 @@
 - Problems: PHP not in PATH (fixed via environment variables), PowerShell blocked npm scripts (fixed with Set-ExecutionPolicy)
 
 ### Phase 1 — Data layer
-- Date:
-- What I built:
+- Date: 2026-10-05 (branch `phase-1-data-layer`)
+- What I built: 6 migrations (categories, areas, users.role, restaurants, restaurant_images, opening_hours); 4 PHP enums with Arabic labels; 5 models with relationships, scopes and auto Arabic slugs; 5 factories; 4 seeders (12 fictional Gaza restaurants); 20 new tests.
 - Concepts I reviewed (migrations, relationships, factories, seeders):
-- Decisions and why:
+- Decisions and why: string columns + PHP enums instead of DB enum (works on MySQL and SQLite); slug generated only on create with numeric suffixes so links never break; DatabaseSeeder without WithoutModelEvents so the slug event fires.
 
 (Add one section per phase.)
