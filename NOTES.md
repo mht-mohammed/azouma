@@ -47,6 +47,24 @@ Built the public pages (home list with filters, restaurant details with map) wit
 
 **Key decisions I understand and agree with**
 - Location is shown as the owner's written address plus coordinates-free contact buttons (call, WhatsApp).
+
+### Phase 3 — Auth, roles, and owner dashboard
+- Date: 2026-10-05 | Branch: `phase-3-auth-owner`
+
+**What I did**
+Built owner registration, role-based login redirects, a role middleware, a restaurant policy, and the full owner dashboard (create/edit, quick status change, weekly hours, image manager) with an AI coding agent, and verified everything with tests plus a real browser check.
+
+**What is in it**
+- `/owner/register` for owners (public `/register` stays for customers, always role `customer`)
+- Login redirects by role: owner → dashboard, admin → placeholder page, customer → home
+- `role:owner` / `role:admin` middleware, `RestaurantPolicy` (one restaurant per owner enforced)
+- Dashboard with approval status + rejection reason, critical edits send approved restaurants back to `pending`
+- Hours editor (7 days, closed checkbox, overnight allowed), images (upload/delete/cover/reorder, max 10, files deleted with rows), coordinates now optional (address text is the location)
+
+**Key decisions I understand and agree with**
+- Owner routes bind restaurants by ID while public URLs use slugs.
+- Status/verification fields are absent from owner requests, so injected values can never be mass-assigned.
+- Image files live on the `public` disk and deleting a cover promotes the next image, keeping exactly one cover.
 - Leaflet loads only on the details page, bundled locally — no CDN.
 - Filters stay in the URL and pagination links, and the list is eager-loaded (no N+1).
 
