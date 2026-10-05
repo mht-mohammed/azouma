@@ -100,6 +100,22 @@ Translated the whole UI to Arabic (lang files, RTL layouts, no external fonts), 
 - intervention/image v3 over raw GD: cleaner code for resize/WebP with the same GD driver.
 - Thumbnails on cards, optimized images on details, `width`/`height` against layout shift, placeholder fallback kept.
 - Cache keys `categories:list`/`areas:list` cleared by model events on every save or delete.
+
+### Phase 6 — Quality review, documentation, CI
+- Date: 2026-10-05 | Branch: `phase-6-quality-docs-ci`
+
+**What I did**
+Audited all 61 routes plus security, performance, and quality with an AI coding agent, fixed the safe findings, added the missing authorization tests, and wrote a portfolio-ready README, CI workflow, and updated `.env.example`.
+
+**What is in it**
+- Audit fixes: removed dead `coverUrl()`, eager-loaded the OG cover, throttled public registrations, completed Arabic email strings
+- New tests for state-changing admin endpoints and customer isolation
+- English README (features, stack, architecture, install, demo accounts, roadmap, author), GitHub Actions CI, `.env.example` with Gaza timezone and MySQL defaults
+
+**Key decisions I understand and agree with**
+- Admin areas rely on the `role` middleware as the single authorization source; policies guard owner-side actions.
+- CI mirrors the local definition of done: build, Pint, full test suite.
+- No real names, numbers, or photos anywhere; demo data is clearly marked fictional.
 - Leaflet loads only on the details page, bundled locally — no CDN.
 - Filters stay in the URL and pagination links, and the list is eager-loaded (no N+1).
 

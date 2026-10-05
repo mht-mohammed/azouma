@@ -28,7 +28,7 @@ class RestaurantController extends Controller
     {
         abort_if($restaurant->status !== RestaurantStatus::APPROVED, 404);
 
-        $restaurant->loadMissing(['category', 'area', 'images', 'openingHours']);
+        $restaurant->loadMissing(['category', 'area', 'images', 'openingHours', 'coverImage']);
 
         return view('restaurants.show', [
             'restaurant' => $restaurant,

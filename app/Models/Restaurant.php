@@ -184,11 +184,6 @@ class Restaurant extends Model
         return $this->operating_status_updated_at ?? $this->updated_at;
     }
 
-    public function coverUrl(): string
-    {
-        return $this->coverImage?->url ?? asset('images/placeholder-restaurant.svg');
-    }
-
     /**
      * Structured data for search engines (schema.org/Restaurant).
      */

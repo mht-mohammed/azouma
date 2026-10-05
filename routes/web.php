@@ -17,7 +17,9 @@ Route::get('/', [RestaurantController::class, 'index'])->name('home');
 Route::get('/restaurants/{restaurant}', [RestaurantController::class, 'show'])->name('restaurants.show');
 
 Route::get('/owner/register', [OwnerRegistrationController::class, 'create'])->name('owner.register');
-Route::post('/owner/register', [OwnerRegistrationController::class, 'store'])->name('owner.register.store');
+Route::post('/owner/register', [OwnerRegistrationController::class, 'store'])
+    ->middleware('throttle:10,60')
+    ->name('owner.register.store');
 
 Route::post('/restaurants/{restaurant}/reports', [ReportController::class, 'store'])
     ->middleware('throttle:10,60')

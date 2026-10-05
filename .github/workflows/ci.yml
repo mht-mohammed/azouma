@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Get the code.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Install PHP 8.2 with the extensions Laravel needs (incl. GD for image tests).
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, gd, sqlite, pdo_sqlite
+          coverage: none
+
+      # 3. Install Node for the frontend build.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 4. Install PHP dependencies (cached automatically by composer).
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      # 5. Install JS dependencies from the lock file, then build assets.
+      - name: Install NPM dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      # 6. Prepare a throwaway environment: SQLite in memory is used by phpunit.xml.
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      # 7. Fail if the code style is off (Laravel Pint, Laravel's formatter).
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+      # 8. Run the full PHPUnit suite.
+      - name: Run tests
+        run: php artisan test

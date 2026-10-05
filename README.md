@@ -1,59 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Azouma (عزومة) — Restaurant Discovery Guide for Gaza
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Azouma is a fast, Arabic-first, lightweight website for discovering restaurants in **Gaza, Palestine**.
 
-## About Laravel
+**The problem:** restaurant information in Gaza is scattered across social media and often outdated — opening hours change, places close temporarily or relocate after the destruction, and people waste time and effort finding somewhere actually open.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**The solution:** a directory where visitors browse approved restaurants and see **photos, opening hours, contact info, current operating status, last-update date, verification badge, and a detailed written address**. Owners manage their own listing; an admin reviews and verifies every restaurant before it appears publicly. Because precise maps are unreliable after the destruction, locations are conveyed through detailed written addresses rather than map pins.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Key features by role
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Visitor (no account needed)**
+- Browse approved restaurants with cover photos, status, and verified badges
+- Filter by category and area, search by name
+- Restaurant page: gallery, weekly hours (Saturday first) with an "open now" indicator, call/WhatsApp buttons, and a form to report incorrect information
 
-## Learning Laravel
+**Customer (registered user)**
+- Everything a visitor can do (account required for future features such as favorites and reviews)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**Owner**
+- Separate registration at `/owner/register`
+- Dashboard showing the approval status (including the rejection reason)
+- Create and edit their one restaurant: details, weekly hours, operating status, and up to 10 photos (auto-optimized to WebP in the background)
+- Editing critical data (name, category, area, phone) sends an approved restaurant back for re-approval
+- In-app notifications when the restaurant is approved or rejected
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Admin**
+- Dashboard with counts and shortcuts
+- Review queue: approve, reject (reason required), verify/unverify
+- Reports inbox (mark as resolved), category and area management
 
-## Laravel Sponsors
+## Tech stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- PHP 8.2, Laravel 12 (Blade + Breeze), MySQL, Tailwind CSS, Vite
+- `intervention/image` (GD driver) for queued WebP image processing
+- Laravel queues (database driver), notifications (database + log mail), cache for lookups
+- PHPUnit with in-memory SQLite for tests, Laravel Pint for code style
+- No external CDNs, fonts, or map providers — everything is self-hosted for slow connections
 
-### Premium Partners
+## Architecture decisions
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Thin controllers.** HTTP-only logic; validation lives in Form Requests, authorization in Policies and a `role` middleware.
+- **Action classes** (`app/Actions`) for multi-step business rules such as approval, rejection, verification, and the "critical edit sends back to pending" rule.
+- **PHP backed enums** with Arabic `label()` methods instead of raw strings or DB enums, so the same migrations run on MySQL and SQLite.
+- **Policies + scoped queries.** Owners can only ever touch their own restaurant (scoped queries 404 everything else); admins are gated by role middleware.
+- **Queues** for image optimization and notifications so uploads and approvals stay fast.
+- **Caching** for rarely-changing lookups (categories, areas) with automatic invalidation via model events.
+- **Route model binding by slug** for public restaurant URLs.
 
-## Contributing
+## Database overview
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `users` — name, email, password, `role` (`admin`, `owner`, `customer`)
+- `categories`, `areas` — `name_ar` + unique slug
+- `restaurants` — owner, category, area, details, optional coordinates, `status` (`pending`, `approved`, `rejected`), `operating_status` (`open`, `temporarily_closed`, `relocated`), verification fields
+- `restaurant_images` — path, optimized thumbnail, dimensions, cover flag, sort order
+- `opening_hours` — one row per weekday (`0` = Saturday … `6` = Friday); closing before opening means after midnight
+- `reports` — visitor reports with reason, message, and status (`new`, `resolved`)
+- Standard Laravel tables: `notifications`, `jobs`, `cache`, `sessions`
 
-## Code of Conduct
+## Installation
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Requirements: PHP 8.2 with the GD extension, Composer, Node.js, MySQL, Git.
 
-## Security Vulnerabilities
+```powershell
+git clone <your-repo-url> Azouma
+cd Azouma
+composer install
+npm install
+Copy-Item .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Edit `.env` for your machine (database `azouma`, `APP_TIMEZONE=Asia/Gaza`, `APP_LOCALE=ar`):
 
-## License
+```powershell
+php artisan migrate --seed
+php artisan storage:link
+npm run build
+php artisan serve
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Useful while developing (each in its own terminal):
+
+```powershell
+npm run dev
+php artisan queue:work
+```
+
+Production checklist: `php artisan migrate --force`, `php artisan optimize`, `php artisan storage:link`, and a supervised `php artisan queue:work` process.
+
+## Running tests
+
+```powershell
+php artisan test
+vendor\bin\pint --test
+```
+
+Tests run on in-memory SQLite, so every migration must stay compatible with both MySQL and SQLite.
+
+## Demo accounts (LOCAL DEMO only — never use in production)
+
+Password for all accounts: `password`
+
+| Email | Role |
+| --- | --- |
+| `admin@azouma.local` | Admin |
+| `owner1@azouma.local`, `owner2@azouma.local` | Owners |
+| `customer@azouma.local` | Customer |
+
+All seeded restaurants, phone numbers, and images are fictional placeholders.
+
+## Roadmap
+
+Ordered by value: "near me" search, reviews and ratings, menu and prices, favorites, REST API with Sanctum, English UI, Docker setup.
+
+## Author
+
+**Mohammed Hazem** — Junior PHP/Laravel developer
+- GitHub: https://github.com/mht-mohammed
+- LinkedIn: https://www.linkedin.com/in/mohammedhazem
+- Email: mohammedhazem.dev@gmail.com

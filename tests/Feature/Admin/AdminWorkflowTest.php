@@ -239,4 +239,43 @@ class AdminWorkflowTest extends TestCase
         $response->assertSee($restaurant->name);
         $response->assertSee($restaurant->owner->email);
     }
+
+    public function test_state_changing_admin_endpoints_reject_non_admins(): void
+    {
+        $owner = User::factory()->create(['role' => UserRole::OWNER]);
+        $customer = User::factory()->create(['role' => UserRole::CUSTOMER]);
+        $restaurant = Restaurant::factory()->pending()->create();
+        $category = Category::factory()->create();
+
+        foreach ([$owner, $customer] as $user) {
+            $this->actingAs($user)->post('/admin/restaurants/'.$restaurant->id.'/approve')->assertForbidden();
+            $this->actingAs($user)->post(
+                '/admin/restaurants/'.$restaurant->id.'/reject',
+                ['rejection_reason' => 'x']
+            )->assertForbidden();
+            $this->actingAs($user)->post('/admin/restaurants/'.$restaurant->id.'/verify')->assertForbidden();
+            $this->actingAs($user)->post('/admin/categories', ['name_ar' => 'ممنوع'])->assertForbidden();
+            $this->actingAs($user)->delete('/admin/categories/'.$category->id)->assertForbidden();
+        }
+
+        // Nothing changed.
+        $this->assertSame(RestaurantStatus::PENDING, $restaurant->fresh()->status);
+        $this->assertFalse(Category::where('name_ar', 'ممنوع')->exists());
+        $this->assertNotNull(Category::find($category->id));
+    }
+
+    public function test_customer_cannot_create_restaurant(): void
+    {
+        $customer = User::factory()->create(['role' => UserRole::CUSTOMER]);
+
+        $this->actingAs($customer)->post('/owner/restaurants', [
+            'name' => 'محاولة زبون',
+            'category_id' => Category::factory()->create()->id,
+            'area_id' => Area::factory()->create()->id,
+            'phone' => '123',
+            'address' => 'عنوان',
+        ])->assertForbidden();
+
+        $this->assertFalse(Restaurant::where('name', 'محاولة زبون')->exists());
+    }
 }
