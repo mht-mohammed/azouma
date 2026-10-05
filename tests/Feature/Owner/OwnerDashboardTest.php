@@ -267,19 +267,31 @@ class OwnerDashboardTest extends TestCase
 
     public function test_image_upload_stores_file_and_sets_first_as_cover(): void
     {
+        config()->set('queue.default', 'sync');
         Storage::fake('public');
         $owner = $this->owner();
         $restaurant = Restaurant::factory()->approved()->create(['owner_id' => $owner->id]);
 
         $this->actingAs($owner)->post(
             '/owner/restaurants/'.$restaurant->id.'/images',
-            ['images' => [UploadedFile::fake()->image('cover.jpg')]]
+            ['images' => [UploadedFile::fake()->image('cover.jpg', 1200, 800)]]
         )->assertRedirect();
 
         $image = $restaurant->images()->first();
         $this->assertNotNull($image);
         $this->assertTrue($image->is_cover);
+        $this->assertStringEndsWith('.webp', $image->path);
+        $this->assertNotNull($image->thumbnail_path);
         Storage::disk('public')->assertExists(str_replace('storage/', '', $image->path));
+        Storage::disk('public')->assertExists(str_replace('storage/', '', $image->thumbnail_path));
+        // The unprocessed original is removed after optimization.
+        $leftovers = array_filter(
+            Storage::disk('public')->allFiles('restaurants/'.$restaurant->id),
+            fn (string $file) => str_contains($file, 'original-')
+        );
+        $this->assertCount(0, $leftovers);
+        $this->assertSame(1200, $image->width);
+        $this->assertSame(800, $image->height);
     }
 
     public function test_image_upload_rejects_bad_type_oversize_and_too_many(): void
@@ -310,6 +322,7 @@ class OwnerDashboardTest extends TestCase
 
     public function test_deleting_cover_image_promotes_another_and_removes_file(): void
     {
+        config()->set('queue.default', 'sync');
         Storage::fake('public');
         $owner = $this->owner();
         $restaurant = Restaurant::factory()->approved()->create(['owner_id' => $owner->id]);
@@ -324,12 +337,14 @@ class OwnerDashboardTest extends TestCase
 
         $cover = $restaurant->images()->where('is_cover', true)->first();
         $coverRelativePath = str_replace('storage/', '', $cover->path);
+        $thumbRelativePath = str_replace('storage/', '', $cover->thumbnail_path);
 
         $this->actingAs($owner)->delete(
             '/owner/restaurants/'.$restaurant->id.'/images/'.$cover->id
         )->assertRedirect();
 
         Storage::disk('public')->assertMissing($coverRelativePath);
+        Storage::disk('public')->assertMissing($thumbRelativePath);
         $this->assertSame(1, $restaurant->images()->count());
         $this->assertSame(1, $restaurant->images()->where('is_cover', true)->count());
     }

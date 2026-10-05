@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import colors from 'tailwindcss/colors';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -12,7 +13,13 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                // System Arabic-friendly stack: no web-font downloads.
+                sans: ['system-ui', '-apple-system', 'Segoe UI', 'Tahoma', 'Arial', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                // Warm design tokens. Primary = burnt orange, neutral = warm stone.
+                primary: colors.orange,
+                neutral: colors.stone,
             },
         },
     },

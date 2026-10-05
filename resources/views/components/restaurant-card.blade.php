@@ -1,7 +1,7 @@
 @props(['restaurant'])
 
 <a href="{{ route('restaurants.show', $restaurant) }}" class="block overflow-hidden rounded-lg bg-white shadow-sm transition hover:shadow-md">
-    <img src="{{ $restaurant->coverUrl() }}" alt="صورة {{ $restaurant->name }}" loading="lazy" class="h-44 w-full object-cover">
+    <img src="{{ $restaurant->coverImage?->thumbnailUrl() ?? asset('images/placeholder-restaurant.svg') }}" alt="صورة {{ $restaurant->name }}" loading="lazy" class="h-44 w-full object-cover">
     <div class="p-4">
         <div class="flex items-start justify-between gap-2">
             <h2 class="font-bold leading-snug">{{ $restaurant->name }}</h2>

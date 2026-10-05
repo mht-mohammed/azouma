@@ -37,8 +37,8 @@ class RestaurantController extends Controller
         Gate::authorize('create', Restaurant::class);
 
         return view('owner.restaurants.create', [
-            'categories' => Category::orderBy('name_ar')->get(),
-            'areas' => Area::orderBy('name_ar')->get(),
+            'categories' => Category::orderedList(),
+            'areas' => Area::orderedList(),
         ]);
     }
 
@@ -68,8 +68,8 @@ class RestaurantController extends Controller
 
         return view('owner.restaurants.edit', [
             'restaurant' => $restaurant,
-            'categories' => Category::orderBy('name_ar')->get(),
-            'areas' => Area::orderBy('name_ar')->get(),
+            'categories' => Category::orderedList(),
+            'areas' => Area::orderedList(),
             'weekdays' => Weekday::cases(),
             'hoursByDay' => $restaurant->openingHours->keyBy(
                 fn ($hour) => $hour->day_of_week->value

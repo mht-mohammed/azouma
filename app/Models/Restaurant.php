@@ -190,6 +190,49 @@ class Restaurant extends Model
     }
 
     /**
+     * Structured data for search engines (schema.org/Restaurant).
+     */
+    public function jsonLd(): array
+    {
+        $dayNames = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        $hours = [];
+        foreach ($this->openingHours as $hour) {
+            if ($hour->is_closed || ! $hour->opens_at || ! $hour->closes_at) {
+                continue;
+            }
+
+            $hours[] = [
+                '@type' => 'OpeningHoursSpecification',
+                'dayOfWeek' => $dayNames[$hour->day_of_week->value],
+                'opens' => substr((string) $hour->opens_at, 0, 5),
+                'closes' => substr((string) $hour->closes_at, 0, 5),
+            ];
+        }
+
+        $data = [
+            '@context' => 'https://schema.org',
+            '@type' => 'Restaurant',
+            'name' => $this->name,
+            'description' => $this->description,
+            'address' => $this->address,
+            'telephone' => $this->phone,
+            'servesCuisine' => $this->category?->name_ar,
+            'openingHoursSpecification' => $hours,
+        ];
+
+        if ($this->latitude && $this->longitude) {
+            $data['geo'] = [
+                '@type' => 'GeoCoordinates',
+                'latitude' => (float) $this->latitude,
+                'longitude' => (float) $this->longitude,
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
      * Click-to-chat link. Keeps digits only so stored formats like
      * "+970-59-0000010" or "00970…" both work.
      */

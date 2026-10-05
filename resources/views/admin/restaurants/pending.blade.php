@@ -15,7 +15,7 @@
                         <div class="font-bold">{{ $restaurant->name }}</div>
                         <div class="text-sm text-gray-600">{{ $restaurant->category->name_ar }} · {{ $restaurant->area->name_ar }} · المالك: {{ $restaurant->owner->name }}</div>
                     </div>
-                    <a href="{{ route('admin.restaurants.show', $restaurant) }}" class="rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">مراجعة</a>
+                    <a href="{{ route('admin.restaurants.show', $restaurant) }}" class="rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">مراجعة</a>
                 </div>
             @empty
                 <div class="bg-white shadow-sm rounded-lg p-8 text-center text-gray-600">لا توجد مطاعم قيد المراجعة.</div>

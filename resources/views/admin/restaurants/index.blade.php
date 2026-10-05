@@ -13,7 +13,7 @@
                     <option value="rejected" @selected($filters['status'] === 'rejected')>مرفوضة</option>
                 </select>
                 <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="بحث بالاسم" class="rounded border-gray-300">
-                <button class="rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">تصفية</button>
+                <button class="rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">تصفية</button>
             </form>
 
             @foreach ($restaurants as $restaurant)

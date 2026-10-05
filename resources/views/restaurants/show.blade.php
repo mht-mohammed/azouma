@@ -2,17 +2,34 @@
 
 @section('title', $restaurant->name.' — عزومة')
 @section('meta_description', $restaurant->name.' — '.$restaurant->category->name_ar.' في '.$restaurant->area->name_ar.'. '.$restaurant->operating_status->label().'.')
+@section('canonical', route('restaurants.show', $restaurant))
+@section('meta_tags')
+    <meta property="og:title" content="{{ $restaurant->name }} — عزومة">
+    <meta property="og:description" content="{{ $restaurant->category->name_ar }} في {{ $restaurant->area->name_ar }}. {{ $restaurant->operating_status->label() }}.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ route('restaurants.show', $restaurant) }}">
+    @if ($restaurant->coverImage)
+        <meta property="og:image" content="{{ $restaurant->coverImage->url }}">
+    @endif
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $restaurant->name }} — عزومة">
+    <meta name="twitter:description" content="{{ $restaurant->category->name_ar }} في {{ $restaurant->area->name_ar }}.">
+    <script type="application/ld+json">@json($restaurant->jsonLd())</script>
+@endsection
 
 @section('content')
     <a href="{{ route('home') }}" class="mb-4 inline-block text-sm text-stone-600 underline">→ كل المطاعم</a>
 
     <div class="overflow-hidden rounded-lg bg-white shadow-sm">
         @if ($restaurant->images->isNotEmpty())
-            <img src="{{ $restaurant->images->first()->url }}" alt="صورة {{ $restaurant->name }}" class="h-64 w-full object-cover sm:h-80">
+            @php $cover = $restaurant->images->first(); @endphp
+            <img src="{{ $cover->url }}" alt="صورة {{ $restaurant->name }}" @if ($cover->width) width="{{ $cover->width }}" height="{{ $cover->height }}" @endif class="h-64 w-full object-cover sm:h-80">
             @if ($restaurant->images->count() > 1)
                 <div class="grid grid-cols-3 gap-2 p-3">
                     @foreach ($restaurant->images->skip(1) as $image)
-                        <img src="{{ $image->url }}" alt="صورة {{ $restaurant->name }}" loading="lazy" class="h-24 w-full rounded object-cover">
+                        <a href="{{ $image->url }}" class="block rounded focus:outline-none">
+                            <img src="{{ $image->thumbnailUrl() }}" alt="صورة {{ $restaurant->name }}" loading="lazy" class="h-24 w-full rounded object-cover">
+                        </a>
                     @endforeach
                 </div>
             @endif
@@ -58,7 +75,7 @@
 
             <div class="mt-4 flex flex-wrap gap-2">
                 @if ($restaurant->phone)
-                    <a href="tel:{{ preg_replace('/[^\d+]/', '', $restaurant->phone) }}" class="rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">اتصال</a>
+                    <a href="tel:{{ preg_replace('/[^\d+]/', '', $restaurant->phone) }}" class="rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">اتصال</a>
                 @endif
                 @if ($restaurant->whatsappUrl())
                     <a href="{{ $restaurant->whatsappUrl() }}" class="rounded bg-green-700 px-4 py-2 text-sm font-semibold text-white">واتساب</a>

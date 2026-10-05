@@ -31,7 +31,7 @@
             <div class="bg-white shadow-sm rounded-lg p-6">
                 <h3 class="font-bold mb-3">اختصارات</h3>
                 <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('admin.restaurants.pending') }}" class="rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">مراجعة المعلقة</a>
+                    <a href="{{ route('admin.restaurants.pending') }}" class="rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">مراجعة المعلقة</a>
                     <a href="{{ route('admin.restaurants.index') }}" class="rounded bg-stone-700 px-4 py-2 text-sm font-semibold text-white">كل المطاعم</a>
                     <a href="{{ route('admin.reports.index') }}" class="rounded bg-stone-700 px-4 py-2 text-sm font-semibold text-white">البلاغات</a>
                     <a href="{{ route('admin.categories.index') }}" class="rounded bg-stone-700 px-4 py-2 text-sm font-semibold text-white">التصنيفات</a>

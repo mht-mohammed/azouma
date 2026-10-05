@@ -15,8 +15,8 @@ class RestaurantController extends Controller
     {
         return view('restaurants.index', [
             'restaurants' => $query($request->validated()),
-            'categories' => Category::orderBy('name_ar')->get(),
-            'areas' => Area::orderBy('name_ar')->get(),
+            'categories' => Category::orderedList(),
+            'areas' => Area::orderedList(),
             'filters' => array_merge(
                 ['category' => '', 'area' => '', 'q' => ''],
                 $request->validated()

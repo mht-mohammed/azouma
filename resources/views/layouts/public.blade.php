@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'عزومة — دليل مطاعم غزة')</title>
     <meta name="description" content="@yield('meta_description', 'عزومة: دليل المطاعم في غزة — تصفح المطاعم، شاهد الصور وساعات العمل وحالة الدوام والموقع.')">
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+    @yield('meta_tags')
     @vite('resources/css/app.css')
     @stack('styles')
 </head>
 <body class="bg-amber-50 text-stone-800 min-h-screen flex flex-col" style="font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;">
-    <header class="bg-orange-800 text-amber-50 shadow">
+    <header class="bg-primary-800 text-amber-50 shadow">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="{{ route('home') }}" class="text-2xl font-bold">عزومة</a>
             <nav class="flex items-center gap-4 text-sm">

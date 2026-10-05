@@ -82,6 +82,24 @@ Built the admin area (dashboard, review/approve/reject/verify, categories, areas
 - Admin restaurant URLs bind by ID while public URLs use slugs.
 - A restaurant sent back to `pending` loses its verified badge until re-verified.
 - Owner emails and reporter contacts never appear on public pages.
+
+### Phase 5 — Arabic RTL polish, image processing, caching, SEO
+- Date: 2026-10-05 | Branch: `phase-5-polish-performance-seo`
+
+**What I did**
+Translated the whole UI to Arabic (lang files, RTL layouts, no external fonts), added queued WebP image processing, cached lookups, and SEO basics (meta, JSON-LD, sitemap, robots, Arabic error pages) with an AI coding agent, and verified with tests plus real HTTP checks.
+
+**What is in it**
+- `lang/ar` (validation, auth, passwords, pagination) + `ar.json` for all interface strings; locale default `ar`
+- Warm design tokens (`primary`) in Tailwind, system font stack, keyboard focus styles, accessible gallery
+- `ProcessRestaurantImage` job: max 1600px + 400px thumb, WebP, dimensions stored, original removed, retries safe
+- Cached categories/areas with auto-invalidation; composite index for the public query; `Route::view` for optimize compatibility
+- Canonical/OG/Twitter/JSON-LD on details, cached sitemap of approved restaurants, robots blocking private areas
+
+**Key decisions I understand and agree with**
+- intervention/image v3 over raw GD: cleaner code for resize/WebP with the same GD driver.
+- Thumbnails on cards, optimized images on details, `width`/`height` against layout shift, placeholder fallback kept.
+- Cache keys `categories:list`/`areas:list` cleared by model events on every save or delete.
 - Leaflet loads only on the details page, bundled locally — no CDN.
 - Filters stay in the URL and pagination links, and the list is eager-loaded (no N+1).
 

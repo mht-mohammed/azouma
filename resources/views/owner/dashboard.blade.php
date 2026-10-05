@@ -14,7 +14,7 @@
                     <div class="p-6 text-gray-900 text-center">
                         <p class="text-lg font-semibold">لا يوجد لديك مطعم بعد</p>
                         <p class="mt-2 text-gray-600">أنشئ مطعمك ليتم مراجعته واعتماده.</p>
-                        <a href="{{ route('owner.restaurants.create') }}" class="mt-4 inline-block rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">إنشاء مطعم</a>
+                        <a href="{{ route('owner.restaurants.create') }}" class="mt-4 inline-block rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">إنشاء مطعم</a>
                     </div>
                 </div>
             @else

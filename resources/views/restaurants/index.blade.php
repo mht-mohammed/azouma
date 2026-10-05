@@ -29,7 +29,7 @@
             <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="مثال: مشاوي" class="w-full rounded border-stone-300">
         </label>
         <div class="flex items-end gap-2">
-            <button type="submit" class="rounded bg-orange-800 px-4 py-2 text-sm font-semibold text-white">تصفية</button>
+            <button type="submit" class="rounded bg-primary-800 px-4 py-2 text-sm font-semibold text-white">تصفية</button>
             <a href="{{ route('home') }}" class="rounded px-3 py-2 text-sm text-stone-600 underline">مسح</a>
         </div>
     </form>

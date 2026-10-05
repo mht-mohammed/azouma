@@ -13,14 +13,19 @@ class RestaurantImage extends Model
     protected $fillable = [
         'restaurant_id',
         'path',
+        'thumbnail_path',
         'is_cover',
         'sort_order',
+        'width',
+        'height',
     ];
 
     protected function casts(): array
     {
         return [
             'is_cover' => 'boolean',
+            'width' => 'integer',
+            'height' => 'integer',
         ];
     }
 
@@ -40,5 +45,17 @@ class RestaurantImage extends Model
         }
 
         return asset('images/placeholder-restaurant.svg');
+    }
+
+    /**
+     * Small thumbnail for list cards; falls back to the full image.
+     */
+    public function thumbnailUrl(): string
+    {
+        if ($this->thumbnail_path && file_exists(public_path($this->thumbnail_path))) {
+            return asset($this->thumbnail_path);
+        }
+
+        return $this->url;
     }
 }

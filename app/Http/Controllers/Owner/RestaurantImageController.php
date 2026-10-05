@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Owner\UploadRestaurantImagesRequest;
+use App\Jobs\ProcessRestaurantImage;
 use App\Models\Restaurant;
 use App\Models\RestaurantImage;
 use Illuminate\Http\RedirectResponse;
@@ -45,21 +46,24 @@ class RestaurantImageController extends Controller
             $hasCover = $restaurant->images()->where('is_cover', true)->exists();
 
             foreach ($files as $index => $file) {
+                // Stored as-is; ProcessRestaurantImage optimizes it in the background.
                 $path = $file->storeAs(
                     'restaurants/'.$restaurant->id,
-                    Str::uuid().'.'.$file->extension(),
+                    'original-'.Str::uuid().'.'.$file->extension(),
                     'public'
                 );
 
-                $restaurant->images()->create([
+                $image = $restaurant->images()->create([
                     'path' => 'storage/'.$path,
                     'is_cover' => ! $hasCover && $index === 0,
                     'sort_order' => $nextOrder + $index,
                 ]);
+
+                ProcessRestaurantImage::dispatch($image->id);
             }
         });
 
-        return back()->with('success', 'تم رفع الصور.');
+        return back()->with('success', 'تم رفع الصور. ستظهر بعد تجهيزها.');
     }
 
     public function destroy(Request $request, Restaurant $restaurant, RestaurantImage $image): RedirectResponse
@@ -68,7 +72,7 @@ class RestaurantImageController extends Controller
         $image = $restaurant->images()->findOrFail($image->getKey());
 
         DB::transaction(function () use ($restaurant, $image) {
-            Storage::disk('public')->delete($this->storagePath($image));
+            Storage::disk('public')->delete($this->storedFiles($image));
             $wasCover = $image->is_cover;
             $image->delete();
 
@@ -119,11 +123,20 @@ class RestaurantImageController extends Controller
     }
 
     /**
-     * Image paths are stored as "storage/..." URLs; strip the prefix
-     * to get the path on the public disk.
+     * All files belonging to the image (original, optimized, thumbnail);
+     * stored paths look like "storage/..." URLs, so strip the prefix.
+     *
+     * @return array<int, string>
      */
-    private function storagePath(RestaurantImage $image): string
+    private function storedFiles(RestaurantImage $image): array
     {
-        return (string) preg_replace('#^storage/#', '', $image->path);
+        $strip = fn (?string $path) => $path
+            ? (string) preg_replace('#^storage/#', '', $path)
+            : null;
+
+        return array_values(array_filter([
+            $strip($image->path),
+            $strip($image->thumbnail_path),
+        ]));
     }
 }
