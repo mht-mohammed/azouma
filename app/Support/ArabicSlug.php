@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Str;
+
 class ArabicSlug
 {
     /**
@@ -33,5 +35,29 @@ class ArabicSlug
         }
 
         return $value;
+    }
+
+    /**
+     * Build a unique slug, appending -2, -3… while $exists returns true.
+     *
+     * @param  callable(string): bool  $exists
+     */
+    public static function uniqueSlug(string $name, callable $exists, int $limit = 80, string $fallbackPrefix = 'item-'): string
+    {
+        $base = static::make($name, $limit);
+
+        if ($base === '') {
+            $base = $fallbackPrefix.Str::lower(Str::random(6));
+        }
+
+        $slug = $base;
+        $counter = 2;
+
+        while ($exists($slug)) {
+            $slug = $base.'-'.$counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

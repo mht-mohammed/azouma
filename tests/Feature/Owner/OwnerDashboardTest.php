@@ -91,12 +91,12 @@ class OwnerDashboardTest extends TestCase
             ->assertRedirect(route('owner.dashboard'));
     }
 
-    public function test_login_redirects_admin_to_placeholder(): void
+    public function test_login_redirects_admin_to_dashboard(): void
     {
         $admin = User::factory()->create(['role' => UserRole::ADMIN]);
 
         $this->post('/login', ['email' => $admin->email, 'password' => 'password'])
-            ->assertRedirect(route('admin.placeholder'));
+            ->assertRedirect(route('admin.dashboard'));
     }
 
     public function test_login_redirects_customer_to_home(): void

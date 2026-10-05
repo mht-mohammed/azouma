@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Str;
 
 class Restaurant extends Model
 {
@@ -66,21 +65,12 @@ class Restaurant extends Model
 
     public static function generateUniqueSlug(string $name): string
     {
-        $base = ArabicSlug::make($name);
-
-        if ($base === '') {
-            $base = 'restaurant-'.Str::lower(Str::random(6));
-        }
-
-        $slug = $base;
-        $counter = 2;
-
-        while (static::where('slug', $slug)->exists()) {
-            $slug = $base.'-'.$counter;
-            $counter++;
-        }
-
-        return $slug;
+        return ArabicSlug::uniqueSlug(
+            $name,
+            fn (string $slug) => static::where('slug', $slug)->exists(),
+            80,
+            'restaurant-'
+        );
     }
 
     public function getRouteKeyName(): string
@@ -116,6 +106,11 @@ class Restaurant extends Model
     public function coverImage(): HasOne
     {
         return $this->hasOne(RestaurantImage::class)->where('is_cover', true);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class)->latest();
     }
 
     public function scopeApproved(Builder $query): Builder

@@ -65,8 +65,7 @@
                 @endif
             </div>
 
-            <h2 class="mt-8 text-lg font-bold">ساعات الدوام</h2>
-            <table class="mt-2 w-full text-sm">
+            <h2 class="mt-8 text-lg font-bold">ساعات الدوام</h2>            <table class="mt-2 w-full text-sm">
                 <tbody>
                     @foreach ($restaurant->openingHours as $hour)
                         <tr class="{{ $hour->day_of_week->value === $today ? 'bg-amber-100 font-semibold' : '' }}">
@@ -82,6 +81,33 @@
                     @endforeach
                 </tbody>
             </table>
+
+            <h2 class="mt-8 text-lg font-bold">الإبلاغ عن معلومات خاطئة</h2>
+            @if (session('success'))
+                <p class="mt-2 rounded bg-green-100 p-3 text-sm text-green-800">{{ session('success') }}</p>
+            @endif
+            <form method="POST" action="{{ route('restaurants.reports.store', $restaurant) }}" class="mt-2 space-y-3">
+                @csrf
+                <label class="block">
+                    <span class="text-sm text-stone-600">السبب *</span>
+                    <select name="reason" class="mt-1 block w-full rounded border-stone-300" required>
+                        <option value="">اختر…</option>
+                        @foreach (\App\Enums\ReportReason::cases() as $reason)
+                            <option value="{{ $reason->value }}">{{ $reason->label() }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-stone-600">ما المشكلة؟ *</span>
+                    <textarea name="message" rows="3" class="mt-1 block w-full rounded border-stone-300" required>{{ old('message') }}</textarea>
+                </label>
+                <label class="block">
+                    <span class="text-sm text-stone-600">وسيلة تواصل (اختياري)</span>
+                    <input type="text" name="reporter_contact" value="{{ old('reporter_contact') }}" class="mt-1 block w-full rounded border-stone-300">
+                </label>
+                <input type="text" name="website" value="" class="hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
+                <button class="rounded bg-stone-700 px-4 py-2 text-sm font-semibold text-white">إرسال البلاغ</button>
+            </form>
 
         </div>
     </div>

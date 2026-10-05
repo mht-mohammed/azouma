@@ -65,6 +65,23 @@ Built owner registration, role-based login redirects, a role middleware, a resta
 - Owner routes bind restaurants by ID while public URLs use slugs.
 - Status/verification fields are absent from owner requests, so injected values can never be mass-assigned.
 - Image files live on the `public` disk and deleting a cover promotes the next image, keeping exactly one cover.
+
+### Phase 4 — Admin approval, verification, reports, notifications
+- Date: 2026-10-05 | Branch: `phase-4-admin-reports`
+
+**What I did**
+Built the admin area (dashboard, review/approve/reject/verify, categories, areas, reports), the public report form, and queued owner/admin notifications with an AI coding agent, and verified the full flow with tests plus a real HTTP check.
+
+**What is in it**
+- Admin dashboard with counts, pending list, full review page, all-restaurants list with filters
+- Four small Action classes; approving clears the reason, rejecting requires one, verifying stamps the badge
+- Report model with reason/status enums, public form (rate-limited + honeypot), admin resolve flow
+- Database + mail (log driver) notifications, queued; owners see them with an unread counter
+
+**Key decisions I understand and agree with**
+- Admin restaurant URLs bind by ID while public URLs use slugs.
+- A restaurant sent back to `pending` loses its verified badge until re-verified.
+- Owner emails and reporter contacts never appear on public pages.
 - Leaflet loads only on the details page, bundled locally — no CDN.
 - Filters stay in the URL and pagination links, and the list is eager-loaded (no N+1).
 

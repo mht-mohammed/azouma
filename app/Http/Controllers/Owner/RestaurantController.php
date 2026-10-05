@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Owner;
 
 use App\Actions\UpdateRestaurantAction;
 use App\Enums\RestaurantStatus;
+use App\Enums\UserRole;
 use App\Enums\Weekday;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Owner\StoreRestaurantRequest;
@@ -12,9 +13,12 @@ use App\Http\Requests\Owner\UpdateRestaurantRequest;
 use App\Models\Area;
 use App\Models\Category;
 use App\Models\Restaurant;
+use App\Models\User;
+use App\Notifications\RestaurantSubmittedForReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class RestaurantController extends Controller
@@ -48,6 +52,8 @@ class RestaurantController extends Controller
             ]
         ));
 
+        $this->notifyAdmins($restaurant);
+
         return redirect()
             ->route('owner.restaurants.edit', $restaurant)
             ->with('success', 'تم إنشاء مطعمك وهو الآن قيد المراجعة. أكمل الساعات والصور.');
@@ -80,6 +86,10 @@ class RestaurantController extends Controller
 
         $sentBack = $action->execute($restaurant, $request->validated());
 
+        if ($sentBack) {
+            $this->notifyAdmins($restaurant->fresh());
+        }
+
         return redirect()
             ->route('owner.dashboard')
             ->with('success', $sentBack
@@ -101,5 +111,14 @@ class RestaurantController extends Controller
         return redirect()
             ->route('owner.dashboard')
             ->with('success', 'تم تحديث حالة الدوام.');
+    }
+
+    private function notifyAdmins(Restaurant $restaurant): void
+    {
+        $admins = User::where('role', UserRole::ADMIN)->get();
+
+        if ($admins->isNotEmpty()) {
+            Notification::send($admins, new RestaurantSubmittedForReview($restaurant));
+        }
     }
 }

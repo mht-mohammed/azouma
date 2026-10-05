@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\OperatingStatus;
+use App\Enums\ReportReason;
+use App\Enums\ReportStatus;
 use App\Enums\RestaurantStatus;
 use App\Models\Area;
 use App\Models\Category;
@@ -159,6 +161,28 @@ class RestaurantSeeder extends Seeder
                     }
                 }
             });
+        }
+
+        // A couple of fictional demo reports (never real data).
+        $first = Restaurant::where('name', 'مشاوي الدار التجريبي')->first();
+        $second = Restaurant::where('name', 'برجر الزاوية التجريبي')->first();
+
+        if ($first && ! $first->reports()->exists()) {
+            $first->reports()->create([
+                'reason' => ReportReason::WRONG_INFO,
+                'message' => 'رقم الهاتف لا يرد - بلاغ تجريبي.',
+                'reporter_contact' => null,
+                'status' => ReportStatus::NEW,
+            ]);
+        }
+
+        if ($second && ! $second->reports()->exists()) {
+            $second->reports()->create([
+                'reason' => ReportReason::CLOSED,
+                'message' => 'يبدو مغلقاً هذا الأسبوع - بلاغ تجريبي.',
+                'reporter_contact' => null,
+                'status' => ReportStatus::RESOLVED,
+            ]);
         }
     }
 }

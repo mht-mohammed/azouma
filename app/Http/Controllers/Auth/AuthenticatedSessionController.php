@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         $fallback = match ($request->user()->role) {
             UserRole::OWNER => route('owner.dashboard', absolute: false),
-            UserRole::ADMIN => route('admin.placeholder', absolute: false),
+            UserRole::ADMIN => route('admin.dashboard', absolute: false),
             default => route('home', absolute: false),
         };
 

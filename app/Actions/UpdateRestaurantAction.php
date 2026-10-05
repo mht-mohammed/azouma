@@ -33,8 +33,15 @@ class UpdateRestaurantAction
         DB::transaction(function () use ($restaurant, $data, $needsReapproval) {
             $restaurant->update(array_merge(
                 $data,
+                // A re-approved restaurant loses its verified badge until
+                // an admin verifies it again.
                 $needsReapproval
-                    ? ['status' => RestaurantStatus::PENDING, 'rejection_reason' => null]
+                    ? [
+                        'status' => RestaurantStatus::PENDING,
+                        'rejection_reason' => null,
+                        'is_verified' => false,
+                        'last_verified_at' => null,
+                    ]
                     : []
             ));
         });
