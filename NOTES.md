@@ -33,4 +33,21 @@ I defined the requirements and data model for Azouma and built it with an AI cod
 **What I learned**
 Migrations and foreign keys, enums and casts, relationships and scopes, route model binding by slug, factories vs seeders, and testing with in-memory SQLite.
 
+### Phase 2 — Public pages
+- Date: 2026-10-05 | Branch: `phase-2-public-pages`
+
+**What I did**
+Built the public pages (home list with filters, restaurant details with map) with an AI coding agent, verified them in a real browser at mobile width, and confirmed the full test suite and production build pass.
+
+**What is in it**
+- Public RTL layout plus 5 Blade components (cards, badges, headers, empty state)
+- Home `/` showing only approved restaurants, with category/area/search filters and pagination
+- Details page: gallery, status banner with last-update date, weekly hours from Saturday, open-now indicator, call/WhatsApp buttons and the owner's written address (map and directions removed: after the destruction, places are located by written address, not maps)
+- `search` scope, `isOpenNow()`, and a small query class keeping the controller thin
+
+**Key decisions I understand and agree with**
+- Location is shown as the owner's written address plus coordinates-free contact buttons (call, WhatsApp).
+- Leaflet loads only on the details page, bundled locally — no CDN.
+- Filters stay in the URL and pagination links, and the list is eager-loaded (no N+1).
+
 
